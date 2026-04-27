@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import DestinationCard from "../components/DestinationCard";
 import TripCard from "../components/TripCard";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import { getDestinations, getNotifications, getTrips } from "../services/tripService";
 
 export default function Home() {
@@ -9,16 +9,28 @@ export default function Home() {
   const [trips, setTrips] = useState([]);
   const [destinations, setDestinations] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
-      const destinationsData = await getDestinations();
-      setDestinations(destinationsData);
+      try {
+        setError("");
+        const destinationsData = await getDestinations();
+        setDestinations(Array.isArray(destinationsData) ? destinationsData : []);
 
-      if (user) {
-        const [tripsData, notificationsData] = await Promise.all([getTrips(), getNotifications()]);
-        setTrips(tripsData);
-        setNotifications(notificationsData);
+        if (user) {
+          const [tripsData, notificationsData] = await Promise.all([getTrips(), getNotifications()]);
+          setTrips(Array.isArray(tripsData) ? tripsData : []);
+          setNotifications(Array.isArray(notificationsData) ? notificationsData : []);
+        } else {
+          setTrips([]);
+          setNotifications([]);
+        }
+      } catch (err) {
+        setDestinations([]);
+        setTrips([]);
+        setNotifications([]);
+        setError(err.response?.data?.message || "Unable to load trip data right now.");
       }
     };
 
@@ -85,6 +97,7 @@ export default function Home() {
         <div className="section-heading">
           <h2>Destination suggestions</h2>
         </div>
+        {error && <p className="error-text">{error}</p>}
         <div className="grid grid-large">
           {destinations.map((destination) => (
             <DestinationCard key={destination._id || destination.destinationName} destination={destination} />
