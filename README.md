@@ -57,3 +57,54 @@ This project is prepared for a single-service deployment where the Express serve
 - `CLIENT_URL`: your deployed app URL, for example `https://trip-planner.onrender.com`
 
 Render will build the client, start the server, and serve the frontend from the same app URL.
+
+## Deploy on Vercel
+
+The easiest Vercel setup for this repository is to create two Vercel projects from the same GitHub repo:
+
+- `client` as the frontend project
+- `server` as the backend project
+
+### 1. Deploy the backend
+
+Create a Vercel project with:
+
+- Root Directory: `server`
+- Framework Preset: `Express`
+
+Add these environment variables:
+
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `CLIENT_URL`
+
+Use your frontend Vercel URL for `CLIENT_URL`. Multiple URLs can be added as a comma-separated list.
+
+### 2. Deploy the frontend
+
+Create another Vercel project with:
+
+- Root Directory: `client`
+- Framework Preset: `Vite`
+
+Add this environment variable:
+
+- `VITE_API_URL`
+
+Example value:
+
+```bash
+https://your-backend-project.vercel.app/api
+```
+
+### 3. Update backend CORS
+
+This repo already allows:
+
+- your `CLIENT_URL` values
+- localhost for development
+- Vercel preview/production domains ending in `.vercel.app`
+
+### 4. Redeploy both projects
+
+After setting environment variables, redeploy the backend first, then redeploy the frontend.
